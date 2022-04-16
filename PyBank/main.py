@@ -1,77 +1,85 @@
-import csv
-import os
+import csv 
 
-# Locate CSV file
-file = "./Resources/budget_data.csv"
+with open ('./Resources/budget_data.csv') as csvfile: #Start csv file handling
 
-# Create placeholder lists for the data
-months = []
-net_total = []
- 
-with open (file, newline = "") as csvfile:
-    readcsv = csv.reader(csvfile, delimiter = ',')
- 
-    csv_header = next(csvfile)
+    csvreader=csv.reader(csvfile, delimiter=',') 
+    header=next(csvreader)
 
-# Put the data into lists
-    for row in readcsv:
-        months.append(row[0])
-        net_total.append(int(row[1]))
+    # Prepare variables
+    months=[] 
+    prolosses=[] 
 
-# Count the number of months
-month_count = len(months)
+    # Set start conditions
+    total=0
+    a_change=0
+    m_change=0
+    m_count=0
+    delta1=0
+    delta2=0
+    delta_line1=0
+    delta_line2=0
+    loop1=0
+    loop2=0
 
-# Set variables for loops
-x = 1
-y = 0
+    # Read in each row of data after the header and write data into assigned lists
+    for row in csvreader:
+        month=row[0] #Assign column 0 as month
+        proloss=row[1] #Assign column 1 as proloss
+        months.append(month) #Add next line to list months
+        prolosses.append(proloss) #Add next line to list prolosses
+    
+    # Count the total of months in the "Date" column
+    m_count = len(months) 
+    
+    # print(m_count)
 
-# Average change place holder
-average_change = (net_total[1]-net_total[0])
 
-# Place holder list for changes
-changes = []
+# First loop 
+for loop1 in range (m_count):
+    total=total+int(prolosses[loop1]) #Calculate total amount
+# print(total)
 
-# For loop to calculate month to month change and move values into list
-for month in range(month_count-1):
-        average_change = (net_total[x] - net_total[y])
-        changes.append(int(average_change))
-        x+=1
-        y+=1
+# Second loop 
+for loop2 in range (m_count-1): 
+    a_change=a_change+(float(prolosses[loop2+1])-float(prolosses[loop2]))  
 
-# Calculate the average monthly change and round average
-av_mon_chng = round(sum(changes)/(month_count -1),2)
+# Calculate monthly change
+    m_change=(float(prolosses[loop2+1])-float(prolosses[loop2])) 
+    if m_change>delta1: 
+        delta1=m_change
+        delta_line1=loop2
+    else:
+        delta1=delta1
 
-# Find the min and max change 
-min_change = min(changes)
-max_change = max(changes)
+# print(delta1)
+# print(months[delta_line1+1])
 
-# Return the index to find the positions in the list
-chng_i_min = changes.index(min_change)
-chng_i_max = changes.index(max_change)
+    if m_change<delta2: 
+        delta2=m_change
+        delta_line2=loop2
+    else:
+        delta2=delta2
 
-# Find the months for the min and max changes
-min_chng_month = months[chng_i_min + 1]
-max_chng_month = months[chng_i_max + 1]
+# print(delta2)
+# print(months[delta_line2+1])
 
-# Print the values in console 
-print("Financial Analysis")
-print("----------------------------")
-print(f"Months: {len(months)}")
-print(f"Total: ${sum(net_total)}")
-print(f"Average Monthly Change: {av_mon_chng}")
-print(f"Greatest Increase in Profits: {max_chng_month} (${max_change})")
-print(f"Greatest Decrease in Profits: {min_chng_month} (${min_change})")
+# Generate output lines
 
-# Output to text file
-fin_analysis = open("Financial_Analysis.txt","w")
- 
-fin_analysis.write("Financial Analysis\n")
-fin_analysis.write("----------------------------\n")
-fin_analysis.write(f"Months: {len(months)}\n")
-fin_analysis.write(f"Total: ${sum(net_total)}\n")
-fin_analysis.write(f"Average Monthly Change: {av_mon_chng}\n")
-fin_analysis.write(f"Greatest Increase in Profits: {max_chng_month} (${max_change})\n")
-fin_analysis.write(f"Greatest Decrease in Profits: {min_chng_month} (${min_change})\n")
- 
-  
-fin_analysis.close() 
+analysis=f'\
+Financial Analysis\n\
+----------------------------\n\
+Total Months: {m_count}\n\
+Total Amount: ${total}\n\
+Average Change: ${round(a_change/(m_count-1),2)}\n\
+Greatest Increase in Profits: {months[delta_line1+1]} (${int(delta1)})\n\
+Greatest Decrease in Profits: {months[delta_line2+1]} (${int(delta2)})\n'
+
+# Output results 
+
+print(analysis) 
+
+# Write into text file named Financial_Analysis.txt
+
+file1=open("Financial_Analysis.txt","w")
+file1.writelines(analysis)
+file1.close()
